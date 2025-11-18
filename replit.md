@@ -5,10 +5,11 @@
 
 ## التقنيات المستخدمة
 - **Backend**: PHP 8.2
-- **Database**: PostgreSQL (متوافق مع MySQL)
+- **Database**: SQLite (متوافق مع MySQL/PostgreSQL)
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
 - **التصميم**: Bootstrap-inspired Custom CSS
 - **الأمان**: PDO Prepared Statements, CSRF Protection, Password Hashing
+- **البيئة**: Replit Environment
 
 ## بنية المشروع
 ```
@@ -106,20 +107,30 @@ Password: admin123
 
 ## إعداد المشروع
 
-### 1. إعداد قاعدة البيانات
+### بيئة Replit (الإعداد التلقائي)
+✅ **تم إعداد المشروع تلقائياً في Replit!**
+
+المشروع جاهز للعمل فوراً:
+- قاعدة بيانات SQLite تم إنشاؤها في `database/odhiyaty.db`
+- خادم PHP يعمل على المنفذ 5000
+- جميع الجداول والمسؤول الافتراضي تم إنشاؤهم
+
+### إعداد يدوي (إذا لزم الأمر)
+
+1. **إعداد قاعدة البيانات**
 ```bash
 php setup_database.php
 ```
 
-### 2. تشغيل الموقع
+2. **تشغيل الموقع**
 ```bash
 php -S 0.0.0.0:5000
 ```
 
 ### 3. الوصول للموقع
-- **الموقع الرئيسي**: http://localhost:5000
-- **لوحة التحكم**: http://localhost:5000/admin/
-- **تسجيل دخول الأدمن**: http://localhost:5000/admin/login.php
+- **الموقع الرئيسي**: يظهر تلقائياً في معاينة Replit
+- **لوحة التحكم**: `/admin/`
+- **تسجيل دخول الأدمن**: `/admin/login.php`
 
 ## ملاحظات مهمة
 
@@ -129,10 +140,10 @@ php -S 0.0.0.0:5000
 ✅ حجم رفع الملفات: 10MB  
 ✅ أنواع الصور المدعومة: JPG, PNG, WEBP  
 
-### التوافق مع MySQL
-الكود مكتوب باستخدام PDO ويعمل مع PostgreSQL حالياً، ولكن يمكن تحويله بسهولة إلى MySQL بتعديل:
-1. `config/database.php` - تغيير DSN من pgsql إلى mysql
-2. `setup_database.php` - تعديل أنواع البيانات (SERIAL → AUTO_INCREMENT)
+### التوافق مع قواعد البيانات
+الكود مكتوب باستخدام PDO ويعمل مع SQLite في Replit، ولكن يمكن تحويله بسهولة إلى MySQL/PostgreSQL:
+1. `config/database.php` - تغيير DSN من sqlite إلى mysql أو pgsql
+2. `setup_database.php` - تعديل أنواع البيانات حسب قاعدة البيانات المستخدمة
 
 ### رفع الصور
 - المسار: `uploads/products/`
