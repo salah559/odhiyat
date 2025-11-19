@@ -20,9 +20,10 @@
                 <li><a href="<?php echo BASE_URL; ?>/" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'index.php') ? 'active' : ''; ?>">الرئيسية</a></li>
                 <li><a href="<?php echo BASE_URL; ?>/products.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'products.php') ? 'active' : ''; ?>">الأضاحي</a></li>
                 <li><a href="<?php echo BASE_URL; ?>/contact.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'contact.php') ? 'active' : ''; ?>">تواصل معنا</a></li>
-                <li><a href="<?php echo BASE_URL; ?>/admin/login.php" class="login-btn" style="background: linear-gradient(135deg, var(--primary-gold) 0%, var(--gold-light) 100%); padding: 0.7rem 1.5rem; border-radius: 30px; color: white; font-weight: 600;">تسجيل الدخول</a></li>
                 <?php if (is_logged_in()): ?>
                 <li><a href="<?php echo BASE_URL; ?>/admin/">لوحة التحكم</a></li>
+                <?php else: ?>
+                <li><a href="<?php echo BASE_URL; ?>/admin/login.php" style="background: linear-gradient(135deg, var(--primary-gold) 0%, var(--gold-light) 100%); padding: 0.7rem 1.5rem; border-radius: 30px;">تسجيل الدخول</a></li>
                 <?php endif; ?>
             </ul>
         </div>
