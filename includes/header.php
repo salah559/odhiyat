@@ -22,6 +22,8 @@
                 <li><a href="<?php echo BASE_URL; ?>/contact.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'contact.php') ? 'active' : ''; ?>">تواصل معنا</a></li>
                 <?php if (is_logged_in()): ?>
                 <li><a href="<?php echo BASE_URL; ?>/admin/">لوحة التحكم</a></li>
+                <?php else: ?>
+                <li><a href="<?php echo BASE_URL; ?>/admin/login.php" style="background: linear-gradient(135deg, var(--primary-gold) 0%, var(--gold-light) 100%); padding: 0.7rem 1.5rem; border-radius: 30px;">تسجيل الدخول</a></li>
                 <?php endif; ?>
             </ul>
         </div>
