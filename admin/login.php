@@ -62,16 +62,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         <div id="error-message" class="alert alert-error" style="display: none;"></div>
         
-        <!-- Google Sign-In Button -->
-        <button type="button" onclick="signInWithGoogle()" class="btn" style="width: 100%; background: #fff; color: #333; border: 1px solid #ddd; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-            <svg width="18" height="18" viewBox="0 0 18 18">
-                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-                <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
-                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/>
-            </svg>
-            تسجيل الدخول عبر Google
-        </button>
+        <!-- Google Sign-In Button - Enhanced -->
+        <div style="margin-bottom: 2rem;">
+            <button type="button" onclick="signInWithGoogle()" class="google-signin-btn" style="
+                width: 100%; 
+                background: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
+                color: #fff; 
+                border: none;
+                padding: 1rem 1.5rem;
+                font-size: 1.1rem;
+                font-weight: 600;
+                border-radius: 12px;
+                cursor: pointer;
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                gap: 0.75rem;
+                box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            ">
+                <svg width="24" height="24" viewBox="0 0 24 24" style="background: white; border-radius: 4px; padding: 4px;">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">تسجيل الدخول عبر Google</span>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%); pointer-events: none;"></div>
+            </button>
+            <p style="text-align: center; margin-top: 0.75rem; color: var(--secondary-gray); font-size: 0.9rem;">
+                ✨ طريقة سريعة وآمنة
+            </p>
+        </div>
         
         <div style="text-align: center; margin: 1.5rem 0; color: var(--secondary-gray); position: relative;">
             <span style="background: rgba(255,255,255,0.9); padding: 0 1rem; position: relative; z-index: 1;">أو</span>
