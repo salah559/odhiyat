@@ -1,50 +1,68 @@
 # موقع Odhiyaty - أضحيتي
 
 ## نظرة عامة
-موقع "Odhiyaty" هو منصة احترافية لبيع الأضاحي والأغنام. الصفحة الرئيسية **index.html** هي صفحة HTML ثابتة بتصميم عصري متجاوب بألوان اللوغو الرسمي (ذهبي ورمادي). باقي الصفحات (products.php, contact.php, admin/) مبنية باستخدام PHP + SQLite.
+موقع "Odhiyaty" هو منصة احترافية لبيع الأضاحي والأغنام. تم بناء المشروع باستخدام **معمارية Frontend/Backend منفصلة**:
+- **Frontend**: صفحات HTML/JavaScript تتواصل مع Backend عبر REST API
+- **Backend**: PHP REST API endpoints لإدارة البيانات
+- **Admin Panel**: لوحة تحكم PHP للإدارة
+
+الصفحة الرئيسية **index.html** هي صفحة HTML ثابتة بتصميم عصري متجاوب. صفحات العملاء (products.php, product-details.php, contact.php) تستخدم JavaScript لجلب البيانات من API.
 
 ## التقنيات المستخدمة
-- **الصفحة الرئيسية**: HTML5 ثابت (index.html)
-- **Backend**: PHP 8.2 (لباقي الصفحات)
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript (Client-Side Rendering)
+- **Backend API**: PHP 8.2 REST API
 - **Database**: SQLite (متوافق مع MySQL/PostgreSQL)
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **المصادقة**: Firebase Authentication مع Google Sign-In
+- **المصادقة**: Firebase Authentication مع Google Sign-In (Admin Panel)
 - **التصميم**: Custom CSS مع Glassmorphism
-- **الأمان**: PDO Prepared Statements, CSRF Protection, Password Hashing, Firebase Token Verification
+- **الأمان**: PDO Prepared Statements, CSRF Protection, Password Hashing, Firebase Token Verification, HTML Escaping
 - **البيئة**: Replit Environment
 
 ## بنية المشروع
 ```
 .
-├── admin/                  # لوحة تحكم الأدمن
-│   ├── includes/          # Header/Footer للأدمن
-│   ├── index.php          # Dashboard الرئيسية
-│   ├── login.php          # تسجيل دخول الأدمن
-│   ├── products.php       # إدارة المنتجات
-│   ├── product-form.php   # إضافة/تعديل منتج
-│   ├── orders.php         # إدارة الطلبات
-│   ├── admins.php         # إدارة المسؤولين
-│   ├── contacts.php       # إدارة الرسائل
-│   └── logout.php         # تسجيل الخروج
+├── admin/                   # لوحة تحكم الأدمن (Server-Side Rendering)
+│   ├── includes/           # Header/Footer للأدمن
+│   ├── index.php           # Dashboard الرئيسية
+│   ├── login.php           # تسجيل دخول الأدمن
+│   ├── products.php        # إدارة المنتجات
+│   ├── product-form.php    # إضافة/تعديل منتج
+│   ├── orders.php          # إدارة الطلبات
+│   ├── admins.php          # إدارة المسؤولين
+│   ├── contacts.php        # إدارة الرسائل
+│   └── logout.php          # تسجيل الخروج
+├── api/                     # REST API Endpoints
+│   ├── products.php        # GET /api/products.php - قائمة المنتجات
+│   ├── product-details.php # GET /api/product-details.php?id= - تفاصيل منتج
+│   ├── order.php           # POST /api/order.php - إرسال طلب
+│   ├── contact.php         # POST /api/contact.php - إرسال رسالة
+│   └── csrf-token.php      # GET /api/csrf-token.php - جلب CSRF token
 ├── assets/
 │   ├── css/
-│   │   ├── style.css      # التصميم الرئيسي
-│   │   └── admin.css      # تصميم لوحة التحكم
-│   └── images/logos/      # اللوغو والصور
+│   │   ├── style.css       # التصميم الرئيسي
+│   │   ├── admin.css       # تصميم لوحة التحكم
+│   │   └── google-button.css # تصميم زر Google
+│   ├── images/
+│   │   ├── logos/          # اللوغو
+│   │   └── placeholder.svg # صورة افتراضية للمنتجات
+│   └── js/
+│       └── api.js          # وظائف JavaScript المشتركة للـ API
 ├── config/
-│   ├── database.php       # إعدادات قاعدة البيانات
-│   └── init.php           # ملف الإعداد الأساسي
+│   ├── database.php        # إعدادات قاعدة البيانات
+│   └── init.php            # ملف الإعداد الأساسي
+├── database/
+│   └── odhiyaty.db         # قاعدة بيانات SQLite
 ├── includes/
-│   ├── functions.php      # الوظائف المشتركة
-│   ├── header.php         # رأس الموقع
-│   └── footer.php         # تذييل الموقع
-├── uploads/products/      # مجلد رفع الصور
-├── index.html             # الصفحة الرئيسية (HTML ثابت)
-├── products.php           # صفحة عرض الأضاحي (PHP)
-├── product-details.php    # تفاصيل الأضحية والطلب (PHP)
-├── contact.php            # صفحة التواصل (PHP)
-├── setup_database.php     # إعداد قاعدة البيانات
-└── .htaccess             # إعدادات Apache
+│   ├── functions.php       # الوظائف المشتركة
+│   ├── header.php          # رأس الموقع (Server-Side)
+│   └── footer.php          # تذييل الموقع (Server-Side)
+├── uploads/products/       # مجلد رفع الصور
+├── index.html              # الصفحة الرئيسية (HTML ثابت)
+├── products.php            # صفحة عرض الأضاحي (Frontend with JS)
+├── product-details.php     # تفاصيل الأضحية (Frontend with JS)
+├── contact.php             # صفحة التواصل (Frontend with JS)
+├── setup_database.php      # إعداد قاعدة البيانات
+├── router.php              # PHP Router للخادم المدمج
+└── add_sample_products.php # إضافة منتجات تجريبية
 
 ```
 
@@ -239,6 +257,28 @@ php -S 0.0.0.0:5000
 - Database: SQLite (Replit) / MySQL (cPanel)
 
 ## آخر التعديلات
+
+### 19 نوفمبر 2025 (التحديث الثالث - معمارية Frontend/Backend منفصلة)
+✅ **تحويل إلى معمارية Client-Side Rendering**:
+  - إنشاء مجلد api/ مع REST API endpoints
+  - تحويل products.php, product-details.php, contact.php إلى Frontend مع JavaScript
+  - إنشاء assets/js/api.js للوظائف المشتركة
+  - فصل Frontend عن Backend بشكل كامل
+  - استخدام Fetch API للتواصل مع Backend
+  - حماية XSS بإضافة HTML escaping في JavaScript
+  - إضافة صورة placeholder.svg افتراضية للمنتجات
+
+✅ **API Endpoints**:
+  - GET /api/products.php - جلب قائمة المنتجات مع فلاتر
+  - GET /api/product-details.php?id=X - جلب تفاصيل منتج
+  - POST /api/order.php - إرسال طلب (مع CSRF protection)
+  - POST /api/contact.php - إرسال رسالة (مع CSRF protection)
+  - GET /api/csrf-token.php - جلب CSRF token
+
+✅ **تحسينات الأمان**:
+  - إضافة HTML escaping في JavaScript (escapeHtml function)
+  - الحفاظ على CSRF protection في جميع POST requests
+  - تنظيف المدخلات في Backend API
 
 ### 19 نوفمبر 2025 (التحديث الثاني)
 ✅ **تحسين تصميم زر Google Sign-In**:

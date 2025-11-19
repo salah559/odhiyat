@@ -1,95 +1,112 @@
-<?php
-require_once __DIR__ . '/config/init.php';
-$page_title = 'تواصل معنا';
-
-$success = '';
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (verify_csrf_token($_POST['csrf_token'])) {
-        $name = clean_input($_POST['name']);
-        $email = clean_input($_POST['email']);
-        $phone = clean_input($_POST['phone'] ?? '');
-        $subject = clean_input($_POST['subject'] ?? '');
-        $message = clean_input($_POST['message']);
-        
-        if (empty($name) || empty($email) || empty($message)) {
-            $error = 'الرجاء ملء جميع الحقول المطلوبة';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = 'الرجاء إدخال بريد إلكتروني صحيح';
-        } else {
-            try {
-                $stmt = $pdo->prepare("
-                    INSERT INTO contacts (name, email, phone, subject, message) 
-                    VALUES (:name, :email, :phone, :subject, :message)
-                ");
-                $stmt->execute([
-                    ':name' => $name,
-                    ':email' => $email,
-                    ':phone' => $phone,
-                    ':subject' => $subject,
-                    ':message' => $message
-                ]);
-                
-                $success = 'تم إرسال رسالتك بنجاح! سنتواصل معك قريباً';
-                $_POST = [];
-            } catch (Exception $e) {
-                $error = 'حدث خطأ أثناء إرسال الرسالة';
-            }
-        }
-    } else {
-        $error = 'خطأ في التحقق من الجلسة';
-    }
-}
-
-require_once __DIR__ . '/includes/header.php';
-?>
-
-<section class="section">
-    <div class="container">
-        <h2 class="section-title">تواصل معنا</h2>
-        
-        <div class="contact-form">
-            <?php if ($success): ?>
-            <div class="alert alert-success"><?php echo $success; ?></div>
-            <?php endif; ?>
-            
-            <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo $error; ?></div>
-            <?php endif; ?>
-            
-            <form method="POST" action="">
-                <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
-                
-                <div class="form-group">
-                    <label>الاسم الكامل *</label>
-                    <input type="text" name="name" value="<?php echo $_POST['name'] ?? ''; ?>" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>البريد الإلكتروني *</label>
-                    <input type="email" name="email" value="<?php echo $_POST['email'] ?? ''; ?>" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>رقم الهاتف</label>
-                    <input type="tel" name="phone" value="<?php echo $_POST['phone'] ?? ''; ?>">
-                </div>
-                
-                <div class="form-group">
-                    <label>الموضوع</label>
-                    <input type="text" name="subject" value="<?php echo $_POST['subject'] ?? ''; ?>">
-                </div>
-                
-                <div class="form-group">
-                    <label>الرسالة *</label>
-                    <textarea name="message" rows="6" required><?php echo $_POST['message'] ?? ''; ?></textarea>
-                </div>
-                
-                <button type="submit" class="btn" style="width: 100%;">إرسال الرسالة</button>
-            </form>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تواصل معنا - Odhiyaty</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20251118">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <img src="/assets/images/logos/logo.png" alt="Odhiyaty Logo">
+                <span>أضحيتي</span>
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="/">الرئيسية</a></li>
+                <li><a href="/products.php">الأضاحي</a></li>
+                <li><a href="/contact.php" class="active">تواصل معنا</a></li>
+                <li><a href="/admin/login.php" style="background: linear-gradient(135deg, var(--primary-gold) 0%, var(--gold-light) 100%); padding: 0.7rem 1.5rem; border-radius: 30px;">تسجيل الدخول</a></li>
+            </ul>
         </div>
-    </div>
-</section>
+    </nav>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">تواصل معنا</h2>
+            
+            <div class="contact-form">
+                <div id="contactMessage"></div>
+                
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label>الاسم الكامل *</label>
+                        <input type="text" name="name" id="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>البريد الإلكتروني *</label>
+                        <input type="email" name="email" id="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>رقم الهاتف</label>
+                        <input type="tel" name="phone" id="phone">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>الموضوع</label>
+                        <input type="text" name="subject" id="subject">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>الرسالة *</label>
+                        <textarea name="message" id="message" rows="6" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%;">إرسال الرسالة</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; <span id="currentYear"></span> أضحيتي - Odhiyaty. جميع الحقوق محفوظة.</p>
+            <p>منصة احترافية لبيع الأضاحي والأغنام</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/api.js"></script>
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        const form = document.getElementById('contactForm');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const contactData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                subject: formData.get('subject'),
+                message: formData.get('message'),
+                csrf_token: await getCSRFToken()
+            };
+            
+            const messageDiv = document.getElementById('contactMessage');
+            
+            const result = await apiRequest('/api/contact.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(contactData)
+            });
+            
+            if (result.success) {
+                messageDiv.innerHTML = `<div class="alert alert-success">${result.message}</div>`;
+                form.reset();
+            } else {
+                messageDiv.innerHTML = `<div class="alert alert-error">${result.message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
