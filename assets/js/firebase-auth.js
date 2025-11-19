@@ -1,22 +1,49 @@
 // Firebase Authentication Configuration
-// سيتم تحميل إعدادات Firebase من متغيرات البيئة أو ملف config
+// تحميل الإعدادات من PHP
 
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
+let firebaseConfig = null;
+
+// دالة لتحميل إعدادات Firebase من الخادم
+async function loadFirebaseConfig() {
+    try {
+        const response = await fetch('/admin/firebase-config.php');
+        const config = await response.json();
+        return config;
+    } catch (error) {
+        console.error('خطأ في تحميل إعدادات Firebase:', error);
+        return null;
+    }
+}
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const googleProvider = new firebase.auth.GoogleAuthProvider();
+let auth = null;
+let googleProvider = null;
+
+// دالة التهيئة
+async function initializeFirebase() {
+    if (!firebaseConfig) {
+        firebaseConfig = await loadFirebaseConfig();
+        if (!firebaseConfig) {
+            showError('فشل تحميل إعدادات Firebase');
+            return false;
+        }
+    }
+    
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    auth = firebase.auth();
+    googleProvider = new firebase.auth.GoogleAuthProvider();
+    return true;
+}
 
 // Google Sign-In Function
 async function signInWithGoogle() {
+    const initialized = await initializeFirebase();
+    if (!initialized) {
+        return;
+    }
     try {
         const result = await auth.signInWithPopup(googleProvider);
         const user = result.user;
@@ -82,11 +109,21 @@ async function signOutFromFirebase() {
     }
 }
 
-// مراقبة حالة المصادقة
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        console.log('المستخدم مسجل الدخول:', user.email);
-    } else {
-        console.log('لا يوجد مستخدم مسجل');
+// مراقبة حالة المصادقة (سيتم تفعيلها بعد التهيئة)
+function setupAuthStateListener() {
+    if (auth) {
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('المستخدم مسجل الدخول:', user.email);
+            } else {
+                console.log('لا يوجد مستخدم مسجل');
+            }
+        });
     }
+}
+
+// تهيئة Firebase عند تحميل الصفحة (اختياري - للصفحات التي تحتاج مراقبة الحالة)
+document.addEventListener('DOMContentLoaded', async function() {
+    // لا نقوم بالتهيئة التلقائية إلا إذا كانت الصفحة تحتاجها
+    // التهيئة تتم عند الضغط على زر تسجيل الدخول
 });

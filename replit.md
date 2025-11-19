@@ -8,8 +8,9 @@
 - **Backend**: PHP 8.2 (لباقي الصفحات)
 - **Database**: SQLite (متوافق مع MySQL/PostgreSQL)
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **المصادقة**: Firebase Authentication مع Google Sign-In
 - **التصميم**: Custom CSS مع Glassmorphism
-- **الأمان**: PDO Prepared Statements, CSRF Protection, Password Hashing
+- **الأمان**: PDO Prepared Statements, CSRF Protection, Password Hashing, Firebase Token Verification
 - **البيئة**: Replit Environment
 
 ## بنية المشروع
@@ -70,7 +71,11 @@
   - إلغاء الطلبات (إعادة الأضحية للمتاحة)
 ✅ **إدارة المسؤولين**: إضافة/حذف أدمن  
 ✅ **إدارة الرسائل**: عرض رسائل العملاء  
-✅ **نظام مصادقة آمن**: Password Hashing + Session Management  
+✅ **نظام مصادقة متعدد**: 
+  - **تسجيل الدخول عبر Google**: باستخدام Firebase Authentication
+  - **تسجيل الدخول التقليدي**: عبر البريد الإلكتروني وكلمة المرور
+  - **إدارة الجلسات**: Session Management آمن
+  - **التحقق من الهوية**: Firebase Token Verification  
 
 ## الأمان
 
@@ -103,13 +108,27 @@
 ### العلاقات
 - `orders.product_id` → `products.id` (ON DELETE CASCADE)
 
-## حساب Super Admin الافتراضي
+## تسجيل الدخول للمسؤولين
+
+### طريقة 1: تسجيل الدخول عبر Google (موصى بها)
+1. اذهب إلى `/admin/login.php`
+2. انقر على زر "تسجيل الدخول عبر Google"
+3. اختر حساب Google الخاص بك
+4. سيتم إنشاء حساب مسؤول لك تلقائياً
+
+### طريقة 2: حساب Super Admin الافتراضي
 ```
 Email: bouazzasalah120120@gmail.com
 Password: admin123
 ```
 
 ⚠️ **مهم**: يرجى تغيير كلمة المرور بعد أول تسجيل دخول!
+
+### Firebase Authentication
+لتفعيل تسجيل الدخول عبر Google، يجب إعداد Firebase:
+- راجع ملف `FIREBASE_SETUP.md` للدليل الكامل
+- المتغيرات المطلوبة: FIREBASE_API_KEY, FIREBASE_AUTH_DOMAIN, FIREBASE_PROJECT_ID, وغيرها
+- يتم تخزين المتغيرات بشكل آمن في Replit Secrets
 
 ## إعداد المشروع
 
@@ -219,7 +238,18 @@ php -S 0.0.0.0:5000
 - PHP Version: 8.2+
 - Database: SQLite (Replit) / MySQL (cPanel)
 
-## آخر التعديلات (18 نوفمبر 2025)
+## آخر التعديلات
+
+### 19 نوفمبر 2025
+✅ **إضافة Firebase Authentication**:
+  - تكامل كامل مع Firebase لتسجيل الدخول عبر Google
+  - زر "تسجيل الدخول عبر Google" في صفحة تسجيل الدخول للأدمن
+  - التحقق الآمن من Firebase ID Tokens في الخادم
+  - إنشاء حسابات مسؤولين تلقائياً للمستخدمين الجدد عبر Google
+  - دعم المصادقة المزدوجة (Google + التقليدية)
+  - ملف دليل إعداد Firebase شامل (FIREBASE_SETUP.md)
+
+### 18 نوفمبر 2025
 ✅ تحويل الصفحة الرئيسية من index.php إلى index.html
 ✅ جعل الصفحة الرئيسية HTML ثابت (لا تحتاج PHP)
 ✅ إضافة قسم "تواصل معنا" مدمج في الصفحة الرئيسية
