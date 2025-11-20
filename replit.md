@@ -8,9 +8,9 @@ The user prefers clear and concise communication. They value an iterative develo
 
 ### System Architecture
 The project utilizes a **separated Frontend/Backend architecture**:
--   **Frontend**: Built with static HTML5, CSS3, and Vanilla JavaScript for client-side rendering, communicating with the backend via REST APIs. Key pages like `products.php`, `product-details.php`, and `contact.php` use JavaScript to fetch data. The `index.html` is a static HTML page with a luxurious design, featuring sample products, a hero section, and an embedded contact section.
--   **Backend API**: Developed using PHP 8.2, providing REST API endpoints for data management.
--   **Admin Panel**: A PHP-based control panel for administrators, featuring server-side rendering.
+-   **Frontend**: Built with static HTML5, CSS3, and Vanilla JavaScript for client-side rendering, communicating with the backend via REST APIs. All customer-facing pages are now pure HTML files: `index.html`, `products.html`, `product-details.html`, and `contact.html`. These pages use JavaScript to fetch data from the API endpoints.
+-   **Backend API**: Developed using PHP 8.2, providing REST API endpoints for data management (all files in `/api/` folder remain PHP).
+-   **Admin Panel**: A PHP-based control panel for administrators, featuring server-side rendering (all files in `/admin/` folder remain PHP).
 
 **Key Design Decisions & Features:**
 -   **UI/UX**: Modern, luxurious design with a "Glassmorphism" aesthetic.
@@ -18,7 +18,7 @@ The project utilizes a **separated Frontend/Backend architecture**:
     -   **Visual Effects**: Glassmorphism, subtle gradients, golden glow effects, smooth animations, advanced hover effects on buttons, multi-layered golden-bordered product cards.
     -   **Responsiveness**: Fully responsive across all devices with dynamic text sizing and a flexible CSS grid.
 -   **Technical Implementations**:
-    -   **Client-Side Rendering**: `products.php`, `product-details.php`, `contact.php` are rendered client-side using JavaScript and Fetch API for data retrieval.
+    -   **Client-Side Rendering**: All customer pages (`products.html`, `product-details.html`, `contact.html`) are static HTML files rendered client-side using JavaScript and Fetch API for data retrieval from PHP backend APIs.
     -   **Product Management**: Features advanced filtering by type, weight, and price. Includes multi-image uploads for products.
     -   **Order System**: Ensures each animal can be ordered once, with protection against concurrent orders using `SELECT ... FOR UPDATE` to prevent double-booking. Orders can be confirmed (marking product as "sold") or cancelled (returning product to "available").
     -   **Admin Dashboard**: Provides real-time statistics, product management (add, edit, delete), order management, admin user management, and customer message viewing.
