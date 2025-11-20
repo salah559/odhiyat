@@ -18,8 +18,8 @@
             </a>
             <ul class="navbar-menu">
                 <li><a href="/">الرئيسية</a></li>
-                <li><a href="/products.php">الأضاحي</a></li>
-                <li><a href="/contact.php">تواصل معنا</a></li>
+                <li><a href="/products.html">الأضاحي</a></li>
+                <li><a href="/contact.html">تواصل معنا</a></li>
                 <li><a href="/admin/login.php" style="background: linear-gradient(135deg, var(--primary-gold) 0%, var(--gold-light) 100%); padding: 0.7rem 1.5rem; border-radius: 30px;">تسجيل الدخول</a></li>
             </ul>
         </div>
@@ -50,7 +50,7 @@
         const productId = urlParams.get('id');
 
         if (!productId) {
-            window.location.href = '/products.php';
+            window.location.href = '/products.html';
         }
 
         async function loadProductDetails() {
@@ -62,7 +62,7 @@
                 container.innerHTML = `
                     <div class="alert alert-error">المنتج غير موجود</div>
                     <div style="text-align: center; margin-top: 2rem;">
-                        <a href="/products.php" class="btn btn-secondary">العودة لقائمة الأضاحي</a>
+                        <a href="/products.html" class="btn btn-secondary">العودة لقائمة الأضاحي</a>
                     </div>
                 `;
                 return;
@@ -167,7 +167,7 @@
                 ${orderFormHTML}
                 
                 <div style="text-align: center; margin-top: 2rem;">
-                    <a href="/products.php" class="btn btn-secondary">العودة لقائمة الأضاحي</a>
+                    <a href="/products.html" class="btn btn-secondary">العودة لقائمة الأضاحي</a>
                 </div>
             `;
             
