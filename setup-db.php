@@ -12,12 +12,12 @@ if (!$pdo) {
 
 $tables = [
     "CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         firebase_uid VARCHAR(255) UNIQUE NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         full_name VARCHAR(255) NOT NULL,
         phone VARCHAR(20),
-        account_type ENUM('seller', 'buyer') NOT NULL DEFAULT 'buyer',
+        account_type VARCHAR(50) DEFAULT 'buyer',
         profile_image VARCHAR(500),
         bio TEXT,
         address TEXT,
@@ -27,17 +27,18 @@ $tables = [
         rating DECIMAL(3, 2) DEFAULT 0,
         total_reviews INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_email (email),
-        INDEX idx_account_type (account_type),
-        INDEX idx_created_at (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )",
+
+    "CREATE INDEX IF NOT EXISTS idx_email ON users(email)",
+    "CREATE INDEX IF NOT EXISTS idx_account_type ON users(account_type)",
+    "CREATE INDEX IF NOT EXISTS idx_created_at ON users(created_at)",
 
     "CREATE TABLE IF NOT EXISTS products (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        seller_id INT NOT NULL,
+        id SERIAL PRIMARY KEY,
+        seller_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         name VARCHAR(255) NOT NULL,
-        category ENUM('sheep', 'goat', 'cow', 'camel') NOT NULL,
+        category VARCHAR(50) NOT NULL,
         breed VARCHAR(100),
         age INT,
         weight DECIMAL(10, 2),
@@ -51,103 +52,93 @@ $tables = [
         available BOOLEAN DEFAULT TRUE,
         views INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
-        INDEX idx_seller_id (seller_id),
-        INDEX idx_category (category),
-        INDEX idx_available (available),
-        INDEX idx_price (price),
-        INDEX idx_created_at (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )",
+
+    "CREATE INDEX IF NOT EXISTS idx_seller_id ON products(seller_id)",
+    "CREATE INDEX IF NOT EXISTS idx_category ON products(category)",
+    "CREATE INDEX IF NOT EXISTS idx_available ON products(available)",
+    "CREATE INDEX IF NOT EXISTS idx_price ON products(price)",
 
     "CREATE TABLE IF NOT EXISTS orders (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        buyer_id INT NOT NULL,
-        product_id INT NOT NULL,
-        seller_id INT NOT NULL,
+        id SERIAL PRIMARY KEY,
+        buyer_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        product_id INT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+        seller_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         quantity INT DEFAULT 1,
         total_price DECIMAL(12, 2) NOT NULL,
-        order_status ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+        order_status VARCHAR(50) DEFAULT 'pending',
         delivery_address TEXT,
         delivery_date DATE,
         payment_method VARCHAR(100),
-        payment_status ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
+        payment_status VARCHAR(50) DEFAULT 'pending',
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-        FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
-        INDEX idx_buyer_id (buyer_id),
-        INDEX idx_seller_id (seller_id),
-        INDEX idx_product_id (product_id),
-        INDEX idx_order_status (order_status),
-        INDEX idx_payment_status (payment_status)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )",
+
+    "CREATE INDEX IF NOT EXISTS idx_buyer_id ON orders(buyer_id)",
+    "CREATE INDEX IF NOT EXISTS idx_seller_id_orders ON orders(seller_id)",
+    "CREATE INDEX IF NOT EXISTS idx_product_id ON orders(product_id)",
+    "CREATE INDEX IF NOT EXISTS idx_order_status ON orders(order_status)",
 
     "CREATE TABLE IF NOT EXISTS contacts (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        sender_id INT,
-        receiver_id INT,
+        id SERIAL PRIMARY KEY,
+        sender_id INT REFERENCES users(id) ON DELETE SET NULL,
+        receiver_id INT REFERENCES users(id) ON DELETE SET NULL,
         subject VARCHAR(255),
         message TEXT NOT NULL,
         is_read BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE SET NULL,
-        FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE SET NULL,
-        INDEX idx_receiver_id (receiver_id),
-        INDEX idx_sender_id (sender_id),
-        INDEX idx_is_read (is_read)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )",
+
+    "CREATE INDEX IF NOT EXISTS idx_receiver_id ON contacts(receiver_id)",
+    "CREATE INDEX IF NOT EXISTS idx_sender_id ON contacts(sender_id)",
+    "CREATE INDEX IF NOT EXISTS idx_is_read ON contacts(is_read)",
 
     "CREATE TABLE IF NOT EXISTS reviews (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        order_id INT NOT NULL,
-        reviewer_id INT NOT NULL,
-        reviewed_user_id INT NOT NULL,
-        product_id INT,
+        id SERIAL PRIMARY KEY,
+        order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+        reviewer_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        reviewed_user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        product_id INT REFERENCES products(id) ON DELETE SET NULL,
         rating INT CHECK (rating >= 1 AND rating <= 5),
         comment TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-        FOREIGN KEY (reviewer_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (reviewed_user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
-        INDEX idx_reviewed_user_id (reviewed_user_id),
-        INDEX idx_product_id (product_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )",
+
+    "CREATE INDEX IF NOT EXISTS idx_reviewed_user_id ON reviews(reviewed_user_id)",
+    "CREATE INDEX IF NOT EXISTS idx_product_id_reviews ON reviews(product_id)",
 
     "CREATE TABLE IF NOT EXISTS favorites (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
-        product_id INT NOT NULL,
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        product_id INT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY unique_favorite (user_id, product_id),
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-        INDEX idx_user_id (user_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        UNIQUE(user_id, product_id)
+    )",
+
+    "CREATE INDEX IF NOT EXISTS idx_user_id ON favorites(user_id)",
 
     "CREATE TABLE IF NOT EXISTS notifications (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         type VARCHAR(100),
         title VARCHAR(255),
         message TEXT,
         is_read BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        INDEX idx_user_id (user_id),
-        INDEX idx_is_read (is_read)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )",
+
+    "CREATE INDEX IF NOT EXISTS idx_user_id_notif ON notifications(user_id)",
+    "CREATE INDEX IF NOT EXISTS idx_is_read_notif ON notifications(is_read)",
 
     "CREATE TABLE IF NOT EXISTS admins (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL UNIQUE,
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
         role VARCHAR(50) DEFAULT 'admin',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
 ];
 
 $created = 0;
@@ -165,8 +156,8 @@ foreach ($tables as $sql) {
 }
 
 echo "\n✅ Database setup complete!\n";
-echo "Created/Verified: $created tables\n";
+echo "Created/Verified: $created tables/indexes\n";
 if ($failed > 0) {
-    echo "Failed: $failed tables\n";
+    echo "Failed: $failed operations\n";
 }
 ?>
