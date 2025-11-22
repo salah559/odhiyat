@@ -101,24 +101,25 @@ waitForFirebase(() => {
     }
 });
 
-// Google Auth Handler for Login - Enhanced version
+// Google Auth Handler for Login
 const googleAuthLoginHandler = async () => {
     const messageDiv = document.getElementById('authMessage');
     
-    // Wait for Firebase to initialize
     let attempts = 0;
-    while (!window.firebaseInitialized && attempts < 100) {
+    while (!window.firebaseInitialized && attempts < 120) {
         await new Promise(resolve => setTimeout(resolve, 50));
         attempts++;
     }
     
     try {
         if (typeof firebase === 'undefined' || !firebase.auth) {
-            throw new Error('Firebase not initialized');
+            messageDiv.innerHTML = `<div class="error-message">Firebase not available - خطأ في الاتصال</div>`;
+            return;
         }
         const provider = new firebase.auth.GoogleAuthProvider();
         const result = await firebase.auth().signInWithPopup(provider);
-        window.location.href = '/index.html';
+        messageDiv.innerHTML = `<div class="success-message">تم الدخول بنجاح!</div>`;
+        setTimeout(() => window.location.href = '/index.html', 1000);
     } catch (error) {
         const errorMsg = error.code ? getErrorMessage(error.code) : (error.message || 'خطأ غير متوقع');
         messageDiv.innerHTML = `<div class="error-message">خطأ: ${errorMsg}</div>`;
@@ -175,26 +176,27 @@ waitForFirebase(() => {
     }
 });
 
-// Google Auth Handler for Signup - Enhanced version
+// Google Auth Handler for Signup
 const googleAuthSignupHandler = async () => {
     const messageDiv = document.getElementById('authMessage');
     
-    // Wait for Firebase to initialize
     let attempts = 0;
-    while (!window.firebaseInitialized && attempts < 100) {
+    while (!window.firebaseInitialized && attempts < 120) {
         await new Promise(resolve => setTimeout(resolve, 50));
         attempts++;
     }
     
     try {
         if (typeof firebase === 'undefined' || !firebase.auth) {
-            throw new Error('Firebase not initialized');
+            messageDiv.innerHTML = `<div class="error-message">Firebase not available - خطأ في الاتصال</div>`;
+            return;
         }
         const accountType = document.querySelector('input[name="accountType"]:checked').value;
         const provider = new firebase.auth.GoogleAuthProvider();
         const result = await firebase.auth().signInWithPopup(provider);
         localStorage.setItem(`userType_${result.user.uid}`, accountType);
-        window.location.href = '/index.html';
+        messageDiv.innerHTML = `<div class="success-message">تم إنشاء الحساب بنجاح!</div>`;
+        setTimeout(() => window.location.href = '/index.html', 1000);
     } catch (error) {
         const errorMsg = error.code ? getErrorMessage(error.code) : (error.message || 'خطأ غير متوقع');
         messageDiv.innerHTML = `<div class="error-message">خطأ: ${errorMsg}</div>`;

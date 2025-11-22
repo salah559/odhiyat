@@ -1,86 +1,53 @@
-// Firebase Configuration - Load from server and inject
+// Firebase Configuration
 window.firebaseInitialized = false;
-let firebaseConfig = null;
 
-// Get Firebase config from server
 async function getFirebaseConfig() {
     try {
         const response = await fetch('/api/firebase-config.php');
         const config = await response.json();
         if (config.apiKey && config.projectId) {
-            console.log('Firebase config loaded from server');
+            console.log('✓ Firebase config loaded');
             return config;
         }
-        throw new Error('Invalid config');
     } catch (e) {
-        console.log('Could not load config from server');
-        return null;
+        console.error('Config load error:', e);
     }
+    return null;
 }
 
-// Dynamically load Firebase SDK from alternative CDN
-function loadFirebaseSDK() {
-    return new Promise((resolve) => {
-        // Try primary CDN
-        const script1 = document.createElement('script');
-        script1.src = 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-        script1.onerror = () => {
-            console.log('Primary Firebase CDN failed, trying alternative');
-            const script2 = document.createElement('script');
-            script2.src = 'https://cdn.jsdelivr.net/npm/firebase@10.7.0/app';
-            script2.onload = () => resolve(true);
-            script2.onerror = () => {
-                console.log('All Firebase CDNs failed');
-                resolve(false);
-            };
-            document.head.appendChild(script2);
-        };
-        script1.onload = () => {
-            console.log('Firebase SDK loaded');
-            resolve(true);
-        };
-        document.head.appendChild(script1);
-    });
-}
-
-// Initialize Firebase
 async function initializeFirebaseApp() {
-    console.log('Starting Firebase initialization...');
+    console.log('Initializing Firebase v9...');
     
-    // Load config first
-    firebaseConfig = await getFirebaseConfig();
+    const firebaseConfig = await getFirebaseConfig();
     if (!firebaseConfig) {
-        console.error('No Firebase config available');
         window.firebaseInitialized = true;
         return;
     }
     
-    // Wait for Firebase global
     let attempts = 0;
-    while (typeof firebase === 'undefined' && attempts < 100) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+    while (typeof firebase === 'undefined' && attempts < 240) {
+        await new Promise(r => setTimeout(r, 25));
         attempts++;
     }
     
     if (typeof firebase === 'undefined') {
-        console.error('Firebase SDK still not available');
+        console.error('Firebase SDK timeout');
         window.firebaseInitialized = true;
         return;
     }
     
     try {
-        if (firebase.apps.length === 0) {
+        if (!firebase.apps?.length) {
             firebase.initializeApp(firebaseConfig);
         }
         window.firebaseInitialized = true;
-        console.log('Firebase initialized successfully');
+        console.log('✓ Firebase v9 ready');
     } catch (e) {
-        console.error('Firebase init error:', e);
+        console.error('Firebase init:', e.message);
         window.firebaseInitialized = true;
     }
 }
 
-// Start on page load
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeFirebaseApp);
 } else {
