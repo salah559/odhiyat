@@ -83,6 +83,13 @@ if ($action === 'firebase-signin') {
         }
         
         $firebase_uid = 'firebase_' . $uid;
+        
+        // Check if users table exists
+        $tableCheck = $pdo->query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users' LIMIT 1) AS table_exists")->fetch();
+        if (!$tableCheck || !$tableCheck['table_exists']) {
+            throw new Exception('Database tables not initialized. Please visit /setup.html first');
+        }
+        
         $stmt = $pdo->prepare("SELECT id, email, full_name FROM users WHERE firebase_uid = ?");
         $stmt->execute([$firebase_uid]);
         $user = $stmt->fetch();
@@ -95,6 +102,7 @@ if ($action === 'firebase-signin') {
             $userId = $user['id'];
         }
         
+        ob_end_clean();
         echo json_encode([
             'success' => true,
             'user' => [
@@ -106,6 +114,7 @@ if ($action === 'firebase-signin') {
         ]);
     } catch (Exception $e) {
         http_response_code(500);
+        ob_end_clean();
         echo json_encode(['error' => 'خطأ: ' . $e->getMessage()]);
     }
     exit;
