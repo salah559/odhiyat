@@ -19,11 +19,13 @@ const pathname = window.location.pathname;
 const isLoginPage = pathname.includes('login.html');
 const isSignupPage = pathname.includes('signup.html');
 const isAuthPage = isLoginPage || isSignupPage;
+let authCheckPending = true;
 
 waitForFirebase(() => {
     try {
         firebase.auth().onAuthStateChanged((user) => {
             currentUser = user;
+            authCheckPending = false;
             
             if (user && isAuthPage) {
                 // User is logged in but on auth page, redirect to home
@@ -37,6 +39,7 @@ waitForFirebase(() => {
         });
     } catch (e) {
         console.error('Auth state check error:', e);
+        authCheckPending = false;
     }
 });
 
@@ -156,12 +159,27 @@ function getErrorMessage(code) {
 
 // Logout function - global scope
 function logout() {
-    waitForFirebase(() => {
-        firebase.auth().signOut().then(() => {
-            window.location.href = '/login.html';
-        }).catch((error) => {
-            console.error('Logout error:', error);
-            window.location.href = '/login.html';
-        });
-    });
+    console.log('Logout function called');
+    
+    // Clear all user data immediately
+    currentUser = null;
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Try to sign out from Firebase
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        try {
+            firebase.auth().signOut().catch((error) => {
+                console.log('Firebase sign out error (non-critical):', error);
+            });
+        } catch (e) {
+            console.log('Error calling signOut:', e);
+        }
+    }
+    
+    // Force redirect to login page
+    console.log('Redirecting to login page');
+    setTimeout(() => {
+        window.location.href = '/login.html';
+    }, 100);
 }
