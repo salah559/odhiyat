@@ -28,6 +28,11 @@ const isSignupPage = pathname.includes('signup.html');
 const isAuthPage = isLoginPage || isSignupPage;
 let authCheckPending = true;
 
+// Hide all content until auth check is complete
+if (!isAuthPage) {
+    document.body.style.display = 'none';
+}
+
 waitForFirebase(() => {
     try {
         firebase.auth().onAuthStateChanged((user) => {
@@ -37,22 +42,29 @@ waitForFirebase(() => {
             if (user && isAuthPage) {
                 // User is logged in but on auth page, redirect to home
                 console.log('Redirecting logged-in user from auth page to home');
-                window.location.href = '/index.html';
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 100);
             } else if (!user && !isAuthPage) {
                 // User is NOT logged in and NOT on auth page, redirect to login
                 console.log('Redirecting unauthorized user to login');
-                window.location.href = '/login.html';
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 100);
             } else if (isAuthPage) {
                 // User not logged in and on auth page, allow access
                 console.log('Auth page accessible');
+                document.body.style.display = 'block';
             } else if (user && !isAuthPage) {
                 // User logged in and on regular page, allow access
                 console.log('User logged in, page accessible');
+                document.body.style.display = 'block';
             }
         });
     } catch (e) {
         console.error('Auth state check error:', e);
         authCheckPending = false;
+        document.body.style.display = 'block';
     }
 });
 
