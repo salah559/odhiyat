@@ -170,20 +170,24 @@ function getErrorMessage(code) {
 function logout() {
     console.log('Logout function called');
     
-    // Clear all user data immediately
-    currentUser = null;
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Try to sign out from Firebase
-    if (typeof firebase !== 'undefined' && firebase.auth) {
-        try {
-            firebase.auth().signOut().catch((error) => {
-                console.log('Firebase sign out error (non-critical):', error);
-            });
-        } catch (e) {
-            console.log('Error calling signOut:', e);
+    try {
+        // Clear all user data immediately
+        currentUser = null;
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Try to sign out from Firebase
+        if (typeof firebase !== 'undefined' && firebase.auth && typeof firebase.auth() === 'object') {
+            try {
+                firebase.auth().signOut().catch(() => {
+                    // Silently handle Firebase signout errors
+                });
+            } catch (e) {
+                // Silently handle Firebase errors
+            }
         }
+    } catch (e) {
+        // Silently handle any errors
     }
     
     // Force redirect to login page
