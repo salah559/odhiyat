@@ -1,24 +1,12 @@
 // Auth State Management
 let currentUser = null;
-
-// Helper to wait for Firebase
-function waitForFirebase(callback, maxAttempts = 100) {
-    if (maxAttempts <= 0) {
-        console.log('Firebase timeout - executing callback anyway');
-        try { callback(); } catch(e) { console.log('Callback error:', e); }
-        return;
-    }
-    
+let authToken = localStorage.getItem('authToken');
+if (authToken) {
     try {
-        if (window.firebaseInitialized && typeof firebase !== 'undefined' && firebase.auth && typeof firebase.auth() === 'object') {
-            callback();
-            return;
-        }
+        currentUser = JSON.parse(authToken);
     } catch (e) {
-        // Continue
+        localStorage.removeItem('authToken');
     }
-    
-    setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 50);
 }
 
 // Check auth state immediately
@@ -33,52 +21,39 @@ if (!isAuthPage) {
     document.body.style.display = 'none';
 }
 
-waitForFirebase(() => {
-    try {
-        firebase.auth().onAuthStateChanged((user) => {
-            currentUser = user;
-            authCheckPending = false;
-            
-            // Handle root path special case
-            if ((pathname === '/' || pathname === '') && !user) {
-                console.log('Redirecting from root to login');
-                setTimeout(() => {
-                    window.location.href = '/login.html';
-                }, 100);
-                return;
-            }
-            
-            if (user && isAuthPage) {
-                // User is logged in but on auth page, redirect to home
-                console.log('Redirecting logged-in user from auth page to home');
-                setTimeout(() => {
-                    window.location.href = '/index.html';
-                }, 100);
-            } else if (!user && !isAuthPage) {
-                // User is NOT logged in and NOT on auth page, redirect to login
-                console.log('Redirecting unauthorized user to login');
-                setTimeout(() => {
-                    window.location.href = '/login.html';
-                }, 100);
-            } else if (isAuthPage) {
-                // User not logged in and on auth page, allow access
-                console.log('Auth page accessible');
-                document.body.style.display = 'block';
-            } else if (user && !isAuthPage) {
-                // User logged in and on regular page, allow access
-                console.log('User logged in, page accessible');
-                document.body.style.display = 'block';
-            }
-        });
-    } catch (e) {
-        console.error('Auth state check error:', e);
-        authCheckPending = false;
-        document.body.style.display = 'block';
+// Check auth state
+setTimeout(() => {
+    authCheckPending = false;
+    
+    if ((pathname === '/' || pathname === '') && !currentUser) {
+        window.location.href = '/login.html';
+        return;
     }
-});
+    
+    if (currentUser && isAuthPage) {
+        window.location.href = '/index.html';
+        return;
+    }
+    
+    if (!currentUser && !isAuthPage) {
+        window.location.href = '/login.html';
+        return;
+    }
+    
+    document.body.style.display = 'block';
+}, 100);
+
+// Dummy logout for compatibility
+function logout() {
+    localStorage.removeItem('authToken');
+    localStorage.clear();
+    setTimeout(() => {
+        window.location.href = '/login.html';
+    }, 100);
+}
 
 // Login Form Handler
-waitForFirebase(() => {
+document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -89,13 +64,29 @@ waitForFirebase(() => {
             const messageDiv = document.getElementById('authMessage');
             
             try {
-                const result = await firebase.auth().signInWithEmailAndPassword(email, password);
-                messageDiv.innerHTML = `<div class="success-message">تم تسجيل الدخول بنجاح!</div>`;
-                setTimeout(() => {
-                    window.location.href = '/index.html';
-                }, 1000);
+                const formData = new FormData();
+                formData.append('action', 'signin');
+                formData.append('email', email);
+                formData.append('password', password);
+                
+                const response = await fetch('/api/auth.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('authToken', JSON.stringify(data.user));
+                    messageDiv.innerHTML = `<div class="success-message">تم تسجيل الدخول بنجاح!</div>`;
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 1000);
+                } else {
+                    messageDiv.innerHTML = `<div class="error-message">خطأ: ${data.error || 'فشل تسجيل الدخول'}</div>`;
+                }
             } catch (error) {
-                messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
+                messageDiv.innerHTML = `<div class="error-message">خطأ: ${error.message}</div>`;
             }
         });
     }
@@ -104,26 +95,9 @@ waitForFirebase(() => {
 // Google Auth Handler for Login
 const googleAuthLoginHandler = async () => {
     const messageDiv = document.getElementById('authMessage');
+    messageDiv.innerHTML = `<div class="info-message">جاري إعادة التوجيه لـ Google...</div>`;
     
-    let attempts = 0;
-    while (!window.firebaseInitialized && attempts < 120) {
-        await new Promise(resolve => setTimeout(resolve, 50));
-        attempts++;
-    }
-    
-    try {
-        if (typeof firebase === 'undefined' || !firebase.auth) {
-            messageDiv.innerHTML = `<div class="error-message">Firebase not available - خطأ في الاتصال</div>`;
-            return;
-        }
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await firebase.auth().signInWithPopup(provider);
-        messageDiv.innerHTML = `<div class="success-message">تم الدخول بنجاح!</div>`;
-        setTimeout(() => window.location.href = '/index.html', 1000);
-    } catch (error) {
-        const errorMsg = error.code ? getErrorMessage(error.code) : (error.message || 'خطأ غير متوقع');
-        messageDiv.innerHTML = `<div class="error-message">خطأ: ${errorMsg}</div>`;
-    }
+    messageDiv.innerHTML = `<div class="error-message">تسجيل الدخول عبر Google قريباً</div>`;
 };
 
 // Attach Google Auth button handler
@@ -138,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Signup Form Handler
-waitForFirebase(() => {
+document.addEventListener('DOMContentLoaded', () => {
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
         signupForm.addEventListener('submit', async (e) => {
@@ -157,20 +131,32 @@ waitForFirebase(() => {
             }
             
             try {
-                const result = await firebase.auth().createUserWithEmailAndPassword(email, password);
-                await result.user.updateProfile({
-                    displayName: fullName
+                const formData = new FormData();
+                formData.append('action', 'signup');
+                formData.append('email', email);
+                formData.append('password', password);
+                formData.append('fullName', fullName);
+                formData.append('accountType', accountType);
+                
+                const response = await fetch('/api/auth.php', {
+                    method: 'POST',
+                    body: formData
                 });
                 
-                // Store user type in localStorage
-                localStorage.setItem(`userType_${result.user.uid}`, accountType);
+                const data = await response.json();
                 
-                messageDiv.innerHTML = `<div class="success-message">تم إنشاء الحساب بنجاح!</div>`;
-                setTimeout(() => {
-                    window.location.href = '/index.html';
-                }, 1000);
+                if (data.success) {
+                    localStorage.setItem('authToken', JSON.stringify(data.user));
+                    localStorage.setItem(`userType_${data.user.uid}`, accountType);
+                    messageDiv.innerHTML = `<div class="success-message">تم إنشاء الحساب بنجاح!</div>`;
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 1000);
+                } else {
+                    messageDiv.innerHTML = `<div class="error-message">خطأ: ${data.error || 'فشل إنشاء الحساب'}</div>`;
+                }
             } catch (error) {
-                messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
+                messageDiv.innerHTML = `<div class="error-message">خطأ: ${error.message}</div>`;
             }
         });
     }
@@ -179,28 +165,9 @@ waitForFirebase(() => {
 // Google Auth Handler for Signup
 const googleAuthSignupHandler = async () => {
     const messageDiv = document.getElementById('authMessage');
+    messageDiv.innerHTML = `<div class="info-message">جاري إعادة التوجيه لـ Google...</div>`;
     
-    let attempts = 0;
-    while (!window.firebaseInitialized && attempts < 120) {
-        await new Promise(resolve => setTimeout(resolve, 50));
-        attempts++;
-    }
-    
-    try {
-        if (typeof firebase === 'undefined' || !firebase.auth) {
-            messageDiv.innerHTML = `<div class="error-message">Firebase not available - خطأ في الاتصال</div>`;
-            return;
-        }
-        const accountType = document.querySelector('input[name="accountType"]:checked').value;
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await firebase.auth().signInWithPopup(provider);
-        localStorage.setItem(`userType_${result.user.uid}`, accountType);
-        messageDiv.innerHTML = `<div class="success-message">تم إنشاء الحساب بنجاح!</div>`;
-        setTimeout(() => window.location.href = '/index.html', 1000);
-    } catch (error) {
-        const errorMsg = error.code ? getErrorMessage(error.code) : (error.message || 'خطأ غير متوقع');
-        messageDiv.innerHTML = `<div class="error-message">خطأ: ${errorMsg}</div>`;
-    }
+    messageDiv.innerHTML = `<div class="error-message">إنشاء حساب عبر Google قريباً</div>`;
 };
 
 // Attach Google Signup button handler
@@ -227,35 +194,4 @@ function getErrorMessage(code) {
         'auth/popup-closed-by-user': 'تم إغلاق النافذة من قبل المستخدم'
     };
     return errors[code] || 'حدث خطأ ما';
-}
-
-// Logout function - global scope
-function logout() {
-    console.log('Logout function called');
-    
-    try {
-        // Clear all user data immediately
-        currentUser = null;
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Try to sign out from Firebase
-        if (typeof firebase !== 'undefined' && firebase.auth && typeof firebase.auth() === 'object') {
-            try {
-                firebase.auth().signOut().catch(() => {
-                    // Silently handle Firebase signout errors
-                });
-            } catch (e) {
-                // Silently handle Firebase errors
-            }
-        }
-    } catch (e) {
-        // Silently handle any errors
-    }
-    
-    // Force redirect to login page
-    console.log('Redirecting to login page');
-    setTimeout(() => {
-        window.location.href = '/login.html';
-    }, 100);
 }
