@@ -1,6 +1,15 @@
 // Auth State Management
 let currentUser = null;
 
+// Hide page content until auth is verified
+function hidePageContent() {
+    document.body.style.display = 'none';
+}
+
+function showPageContent() {
+    document.body.style.display = '';
+}
+
 // Helper to wait for Firebase
 function waitForFirebase(callback, maxAttempts = 50) {
     if (typeof firebase !== 'undefined' && firebase.auth) {
@@ -11,14 +20,27 @@ function waitForFirebase(callback, maxAttempts = 50) {
 }
 
 // Check auth state on page load
-waitForFirebase(() => {
-    firebase.auth().onAuthStateChanged((user) => {
-        currentUser = user;
-        if (user && window.location.pathname !== '/login.html' && window.location.pathname !== '/signup.html') {
-            console.log('User logged in:', user.email);
-        } else if (!user && (window.location.pathname !== '/login.html' && window.location.pathname !== '/signup.html')) {
-            window.location.href = '/login.html';
-        }
+document.addEventListener('DOMContentLoaded', () => {
+    const isAuthPage = window.location.pathname === '/login.html' || window.location.pathname === '/signup.html';
+    
+    if (!isAuthPage) {
+        hidePageContent();
+    }
+    
+    waitForFirebase(() => {
+        firebase.auth().onAuthStateChanged((user) => {
+            currentUser = user;
+            if (user && !isAuthPage) {
+                console.log('User logged in:', user.email);
+                showPageContent();
+            } else if (!user && !isAuthPage) {
+                window.location.href = '/login.html';
+            } else if (isAuthPage && user) {
+                window.location.href = '/index.html';
+            } else if (isAuthPage) {
+                showPageContent();
+            }
+        });
     });
 });
 
