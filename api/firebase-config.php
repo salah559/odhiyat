@@ -1,4 +1,8 @@
 <?php
+ob_start();
+error_reporting(0);
+ini_set('display_errors', 0);
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -41,5 +45,7 @@ $firebaseConfig = [
 ];
 
 // Return as JSON
-echo json_encode($firebaseConfig);
+$output = json_encode($firebaseConfig);
+ob_end_clean();
+echo $output;
 ?>

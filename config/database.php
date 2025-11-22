@@ -37,7 +37,7 @@ if ($database_url) {
             ]
         );
     } catch(PDOException $e) {
-        die("MySQL Connection failed: " . $e->getMessage());
+        $pdo = null;
     }
 } else {
     // Fallback to SQLite for development
@@ -63,7 +63,7 @@ if ($database_url) {
         // Enable foreign keys for SQLite
         $pdo->exec('PRAGMA foreign_keys = ON;');
     } catch(PDOException $e) {
-        die("SQLite Connection failed: " . $e->getMessage());
+        $pdo = null;
     }
 }
 ?>

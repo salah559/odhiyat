@@ -4,10 +4,23 @@ let firebaseApp = null;
 async function initializeFirebase() {
     try {
         const response = await fetch('/api/firebase-config.php');
-        const firebaseConfig = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(`Firebase config failed: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        
+        let firebaseConfig;
+        try {
+            firebaseConfig = JSON.parse(text);
+        } catch (e) {
+            console.error('Invalid JSON from firebase-config.php:', text);
+            throw new Error('Invalid Firebase config response');
+        }
         
         if (!firebaseConfig.apiKey) {
-            console.error('Firebase config not found');
+            console.error('Firebase config missing apiKey');
             return false;
         }
         

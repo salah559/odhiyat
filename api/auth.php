@@ -4,9 +4,20 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
+ob_start();
+error_reporting(0);
+ini_set('display_errors', 0);
+
 require_once(__DIR__ . '/../config/database.php');
 
 global $pdo;
+
+if (!isset($pdo) || !$pdo) {
+    http_response_code(503);
+    ob_end_clean();
+    echo json_encode(['error' => 'خدمة قاعدة البيانات غير متاحة الآن']);
+    exit;
+}
 
 $action = $_POST['action'] ?? $_GET['action'] ?? null;
 
@@ -16,6 +27,7 @@ if ($action === 'signin') {
     
     if (!$email || !$password) {
         http_response_code(400);
+        ob_end_clean();
         echo json_encode(['error' => 'البريد والكلمة مطلوبان']);
         exit;
     }
@@ -60,6 +72,7 @@ if ($action === 'firebase-signin') {
     
     if (!$email || !$uid) {
         http_response_code(400);
+        ob_end_clean();
         echo json_encode(['error' => 'بيانات ناقصة']);
         exit;
     }
