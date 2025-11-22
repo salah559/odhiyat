@@ -11,39 +11,52 @@ if (file_exists($env_file)) {
     }
 }
 
-// Get DATABASE_URL from environment
-$database_url = getenv('DATABASE_URL');
+// Try Replit PostgreSQL first, then fall back to MySQL/SQLite
+$pdo = null;
 
-if ($database_url) {
-    // Parse DATABASE_URL for MySQL connection
-    // Format: mysql://username:password@host:port/database
-    $url = parse_url($database_url);
-    
-    $db_host = $url['host'] ?? 'localhost';
-    $db_port = $url['port'] ?? 3306;
-    $db_user = $url['user'] ?? '';
-    $db_pass = $url['pass'] ?? '';
-    $db_name = ltrim($url['path'] ?? '', '/');
-    
+// 1. Try Replit PostgreSQL (built-in database)
+if (getenv('DATABASE_URL') && strpos(getenv('DATABASE_URL'), 'postgresql') === 0) {
     try {
-        $pdo = new PDO(
-            "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset=utf8mb4",
-            $db_user,
-            $db_pass,
-            [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false
-            ]
-        );
+        $pdo = new PDO(getenv('DATABASE_URL'));
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     } catch(PDOException $e) {
         $pdo = null;
     }
-} else {
-    // Fallback to SQLite for development
+}
+
+// 2. Try MySQL from .env
+if (!$pdo) {
+    $database_url = getenv('DATABASE_URL');
+    if ($database_url && strpos($database_url, 'mysql') === 0) {
+        $url = parse_url($database_url);
+        $db_host = $url['host'] ?? 'localhost';
+        $db_port = $url['port'] ?? 3306;
+        $db_user = $url['user'] ?? '';
+        $db_pass = $url['pass'] ?? '';
+        $db_name = ltrim($url['path'] ?? '', '/');
+        
+        try {
+            $pdo = new PDO(
+                "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset=utf8mb4",
+                $db_user,
+                $db_pass,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false
+                ]
+            );
+        } catch(PDOException $e) {
+            $pdo = null;
+        }
+    }
+}
+
+// 3. Fallback to SQLite
+if (!$pdo) {
     define('DB_PATH', __DIR__ . '/../database/odhiyaty.db');
     
-    // Create database directory if it doesn't exist
     if (!is_dir(__DIR__ . '/../database')) {
         mkdir(__DIR__ . '/../database', 0755, true);
     }
@@ -60,7 +73,6 @@ if ($database_url) {
             ]
         );
         
-        // Enable foreign keys for SQLite
         $pdo->exec('PRAGMA foreign_keys = ON;');
     } catch(PDOException $e) {
         $pdo = null;
