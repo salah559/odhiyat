@@ -11,20 +11,26 @@ if (file_exists($env_file)) {
     }
 }
 
-// Use Replit PostgreSQL (built-in and reliable)
+// Use Replit PostgreSQL with individual environment variables
 $pdo = null;
-$database_url = getenv('DATABASE_URL');
 
-if (!$database_url) {
+$pg_host = getenv('PGHOST');
+$pg_port = getenv('PGPORT') ?: 5432;
+$pg_user = getenv('PGUSER');
+$pg_password = getenv('PGPASSWORD');
+$pg_database = getenv('PGDATABASE');
+
+if (!$pg_host || !$pg_user || !$pg_database) {
     http_response_code(500);
-    die(json_encode(['error' => 'DATABASE_URL not configured']));
+    die(json_encode(['error' => 'PostgreSQL environment variables not configured']));
 }
 
 try {
+    $dsn = "pgsql:host={$pg_host};port={$pg_port};dbname={$pg_database}";
     $pdo = new PDO(
-        $database_url,
-        null,
-        null,
+        $dsn,
+        $pg_user,
+        $pg_password,
         [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
