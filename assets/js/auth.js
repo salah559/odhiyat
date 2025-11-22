@@ -33,16 +33,20 @@ if (!isAuthPage) {
     document.body.style.display = 'none';
 }
 
-// If user is on root path (/) redirect to login instead
-if (pathname === '/' || pathname === '') {
-    window.location.href = '/login.html';
-}
-
 waitForFirebase(() => {
     try {
         firebase.auth().onAuthStateChanged((user) => {
             currentUser = user;
             authCheckPending = false;
+            
+            // Handle root path special case
+            if ((pathname === '/' || pathname === '') && !user) {
+                console.log('Redirecting from root to login');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 100);
+                return;
+            }
             
             if (user && isAuthPage) {
                 // User is logged in but on auth page, redirect to home
