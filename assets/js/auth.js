@@ -145,6 +145,61 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// Google Sign-In Handler for Login
+async function handleCredentialResponse(response) {
+    const messageDiv = document.getElementById('authMessage');
+    try {
+        const formData = new FormData();
+        formData.append('token', response.credential);
+        
+        const result = await fetch('/api/google-auth.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await result.json();
+        
+        if (data.success) {
+            localStorage.setItem('authToken', JSON.stringify(data.user));
+            messageDiv.innerHTML = `<div class="success-message">تم تسجيل الدخول بنجاح!</div>`;
+            setTimeout(() => window.location.href = '/index.html', 1000);
+        } else {
+            messageDiv.innerHTML = `<div class="error-message">خطأ: ${data.error}</div>`;
+        }
+    } catch (error) {
+        messageDiv.innerHTML = `<div class="error-message">خطأ: ${error.message}</div>`;
+    }
+}
+
+// Google Sign-In Handler for Signup
+async function handleCredentialResponseSignup(response) {
+    const messageDiv = document.getElementById('authMessage');
+    try {
+        const accountType = document.querySelector('input[name="accountType"]:checked').value;
+        const formData = new FormData();
+        formData.append('token', response.credential);
+        formData.append('accountType', accountType);
+        
+        const result = await fetch('/api/google-auth.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await result.json();
+        
+        if (data.success) {
+            localStorage.setItem('authToken', JSON.stringify(data.user));
+            localStorage.setItem(`userType_${data.user.uid}`, accountType);
+            messageDiv.innerHTML = `<div class="success-message">تم إنشاء الحساب بنجاح!</div>`;
+            setTimeout(() => window.location.href = '/index.html', 1000);
+        } else {
+            messageDiv.innerHTML = `<div class="error-message">خطأ: ${data.error}</div>`;
+        }
+    } catch (error) {
+        messageDiv.innerHTML = `<div class="error-message">خطأ: ${error.message}</div>`;
+    }
+}
+
 // Get user-friendly error messages
 function getErrorMessage(code) {
     const errors = {
