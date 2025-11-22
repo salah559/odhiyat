@@ -902,7 +902,9 @@ input:focus, textarea:focus, select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 0;
 }
 
 .auth-bg {
