@@ -1,47 +1,43 @@
 // Auth State Management
 let currentUser = null;
 
-// Hide page content until auth is verified
-function hidePageContent() {
-    document.body.style.display = 'none';
-}
-
-function showPageContent() {
-    document.body.style.display = '';
-}
-
 // Helper to wait for Firebase
 function waitForFirebase(callback, maxAttempts = 50) {
     if (typeof firebase !== 'undefined' && firebase.auth) {
-        callback();
+        try {
+            callback();
+        } catch (e) {
+            console.error('Firebase callback error:', e);
+        }
     } else if (maxAttempts > 0) {
         setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 100);
     }
 }
 
-// Check auth state on page load
-document.addEventListener('DOMContentLoaded', () => {
-    const isAuthPage = window.location.pathname === '/login.html' || window.location.pathname === '/signup.html';
-    
-    if (!isAuthPage) {
-        hidePageContent();
-    }
-    
-    waitForFirebase(() => {
+// Check auth state immediately
+const pathname = window.location.pathname;
+const isLoginPage = pathname.includes('login.html');
+const isSignupPage = pathname.includes('signup.html');
+const isAuthPage = isLoginPage || isSignupPage;
+
+waitForFirebase(() => {
+    try {
         firebase.auth().onAuthStateChanged((user) => {
             currentUser = user;
-            if (user && !isAuthPage) {
-                console.log('User logged in:', user.email);
-                showPageContent();
-            } else if (!user && !isAuthPage) {
-                window.location.href = '/login.html';
-            } else if (isAuthPage && user) {
+            
+            if (user && isAuthPage) {
+                // User is logged in but on auth page, redirect to home
+                console.log('Redirecting logged-in user from auth page to home');
                 window.location.href = '/index.html';
-            } else if (isAuthPage) {
-                showPageContent();
+            } else if (!user && !isAuthPage) {
+                // User is NOT logged in and NOT on auth page, redirect to login
+                console.log('Redirecting unauthorized user to login');
+                window.location.href = '/login.html';
             }
         });
-    });
+    } catch (e) {
+        console.error('Auth state check error:', e);
+    }
 });
 
 // Login Form Handler
