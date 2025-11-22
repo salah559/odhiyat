@@ -17,6 +17,47 @@
     --shadow-gold: 0 8px 25px rgba(196, 166, 97, 0.25);
 }
 
+/* Loading Screen */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--warm-white) 0%, #FFFFFF 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+
+.loading-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loading-screen img {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+}
+
+.loading-text {
+    color: var(--primary-gold);
+    font-size: 1.5rem;
+    font-weight: 700;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(0.95); }
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -34,6 +75,11 @@ body {
     color: var(--black);
     line-height: 1.7;
     font-weight: 400;
+    overflow-x: hidden;
+}
+
+body * {
+    transition: all 0.3s ease;
 }
 
 .container {
@@ -130,6 +176,30 @@ body {
     color: var(--pure-white);
     position: relative;
     overflow: hidden;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+}
+
+.hero-bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+.hero-bg-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: float 6s ease-in-out infinite;
 }
 
 .hero::before {
@@ -289,6 +359,25 @@ body {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(196, 166, 97, 0.15);
     position: relative;
+    animation: slideInUp 0.6s ease-out backwards;
+}
+
+.product-card:nth-child(1) { animation-delay: 0.1s; }
+.product-card:nth-child(2) { animation-delay: 0.2s; }
+.product-card:nth-child(3) { animation-delay: 0.3s; }
+.product-card:nth-child(4) { animation-delay: 0.4s; }
+.product-card:nth-child(5) { animation-delay: 0.5s; }
+.product-card:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .product-card::before {
@@ -632,5 +721,176 @@ body {
     .btn {
         padding: 0.9rem 2rem;
         font-size: 1rem;
+    }
+}
+
+/* Scroll Animation */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.section {
+    animation: fadeInScale 0.8s ease-out;
+}
+
+/* Floating Animation */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.navbar-brand img {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Shimmer Effect for Buttons */
+@keyframes shimmer {
+    0% {
+        background-position: -200% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+
+.btn {
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+}
+
+/* Pulse Animation for Status Badges */
+@keyframes statusPulse {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(40, 167, 69, 0.5);
+    }
+}
+
+.status-available {
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+/* Bounce on Hover */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.product-card:hover {
+    animation: bounce 0.6s;
+}
+
+/* Glow Effect */
+@keyframes glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 5px rgba(196, 166, 97, 0.3));
+    }
+    50% {
+        filter: drop-shadow(0 0 15px rgba(196, 166, 97, 0.6));
+    }
+}
+
+.hero h1 {
+    animation: fadeInUp 0.8s ease-out, glow 2s ease-in-out infinite;
+}
+
+/* Rotate on Hover for Icons */
+.navbar-brand img:hover {
+    animation: float 3s ease-in-out infinite, spin 0.6s ease-in-out;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Page Transition */
+@keyframes pageTransition {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+main, section {
+    animation: pageTransition 0.5s ease-out;
+}
+
+/* Enhanced Input Focus */
+input:focus, textarea:focus, select:focus {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px rgba(196, 166, 97, 0.2) !important;
+}
+
+/* Ripple Effect */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Gradient Animation for Hero */
+@keyframes gradientShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.hero {
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+}
+
+/* Stagger Animation for Menu Items */
+.navbar-menu li {
+    animation: fadeInUp 0.5s ease-out backwards;
+}
+
+.navbar-menu li:nth-child(1) { animation-delay: 0.1s; }
+.navbar-menu li:nth-child(2) { animation-delay: 0.2s; }
+.navbar-menu li:nth-child(3) { animation-delay: 0.3s; }
+.navbar-menu li:nth-child(4) { animation-delay: 0.4s; }
+
+/* Smooth Scroll Indicator */
+@keyframes scrollHint {
+    0%, 100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(10px);
     }
 }
