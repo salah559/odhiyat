@@ -6,6 +6,8 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 require_once(__DIR__ . '/../config/database.php');
 
+global $pdo;
+
 $action = $_POST['action'] ?? $_GET['action'] ?? null;
 
 if ($action === 'signin') {
