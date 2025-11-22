@@ -4,16 +4,16 @@ let currentUser = null;
 // Helper to wait for Firebase
 function waitForFirebase(callback, maxAttempts = 50) {
     try {
-        if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth()) {
+        if (typeof firebase !== 'undefined' && firebase.auth && typeof firebase.auth() === 'object') {
             callback();
-        } else if (maxAttempts > 0) {
-            setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 100);
+            return;
         }
     } catch (e) {
-        console.log('Firebase init timeout - continuing anyway');
-        if (maxAttempts > 0) {
-            setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 100);
-        }
+        // Continue anyway
+    }
+    
+    if (maxAttempts > 0) {
+        setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 100);
     }
 }
 

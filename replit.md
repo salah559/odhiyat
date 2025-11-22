@@ -33,10 +33,27 @@ The project utilizes a **separated Frontend/Backend architecture**:
 **Product Statuses**: `available`, `reserved`, `sold`.
 **Order Statuses**: `pending`, `confirmed`, `cancelled`.
 
-### Recent Changes (Nov 20, 2025)
--   Removed admin panel and authentication system (no longer needed)
--   Removed Firebase dependencies
--   Simplified to customer-facing platform only
+### Recent Changes (Nov 22, 2025)
+-   Added Firebase authentication system with Google OAuth support
+-   Created API endpoint `/api/firebase-config.php` to read Firebase credentials from `.env` file
+-   Updated `firebase-config.js` to dynamically load config from server
+-   Fixed scrolling issue on authentication pages
+-   Fixed logout function error handling
+
+### Firebase Setup for cPanel/Production
+When deploying to cPanel:
+1. Add your Firebase credentials to `.env` file:
+   ```
+   FIREBASE_API_KEY=your_api_key
+   FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+   FIREBASE_PROJECT_ID=your-project-id
+   FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+   FIREBASE_MESSAGING_SENDER_ID=123456789
+   FIREBASE_APP_ID=1:123456789:web:abc123
+   ```
+2. Make sure `.env` is in the root directory (same level as `index.html`)
+3. The JavaScript automatically reads from `/api/firebase-config.php` endpoint
+4. Never commit `.env` to Git (already in .gitignore)
 
 ### External Dependencies
 -   **SQLite**: Database used in the Replit environment.
