@@ -1,106 +1,125 @@
 // Auth State Management
 let currentUser = null;
 
-// Check auth state on page load
-firebase.auth().onAuthStateChanged((user) => {
-    currentUser = user;
-    if (user && window.location.pathname !== '/login.html' && window.location.pathname !== '/signup.html') {
-        console.log('User logged in:', user.email);
-    } else if (!user && (window.location.pathname !== '/login.html' && window.location.pathname !== '/signup.html')) {
-        window.location.href = '/login.html';
+// Helper to wait for Firebase
+function waitForFirebase(callback, maxAttempts = 50) {
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        callback();
+    } else if (maxAttempts > 0) {
+        setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 100);
     }
+}
+
+// Check auth state on page load
+waitForFirebase(() => {
+    firebase.auth().onAuthStateChanged((user) => {
+        currentUser = user;
+        if (user && window.location.pathname !== '/login.html' && window.location.pathname !== '/signup.html') {
+            console.log('User logged in:', user.email);
+        } else if (!user && (window.location.pathname !== '/login.html' && window.location.pathname !== '/signup.html')) {
+            window.location.href = '/login.html';
+        }
+    });
 });
 
 // Login Form Handler
-const loginForm = document.getElementById('loginForm');
-if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const messageDiv = document.getElementById('authMessage');
-        
-        try {
-            const result = await firebase.auth().signInWithEmailAndPassword(email, password);
-            messageDiv.innerHTML = `<div class="success-message">تم تسجيل الدخول بنجاح!</div>`;
-            setTimeout(() => {
-                window.location.href = '/index.html';
-            }, 1000);
-        } catch (error) {
-            messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
-        }
-    });
-}
+waitForFirebase(() => {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('authMessage');
+            
+            try {
+                const result = await firebase.auth().signInWithEmailAndPassword(email, password);
+                messageDiv.innerHTML = `<div class="success-message">تم تسجيل الدخول بنجاح!</div>`;
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 1000);
+            } catch (error) {
+                messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
+            }
+        });
+    }
+});
 
 // Google Auth Handler for Login
-const googleAuthBtn = document.getElementById('googleAuth');
-if (googleAuthBtn) {
-    googleAuthBtn.addEventListener('click', async () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        try {
-            const result = await firebase.auth().signInWithPopup(provider);
-            window.location.href = '/index.html';
-        } catch (error) {
-            const messageDiv = document.getElementById('authMessage');
-            messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
-        }
-    });
-}
+waitForFirebase(() => {
+    const googleAuthBtn = document.getElementById('googleAuth');
+    if (googleAuthBtn) {
+        googleAuthBtn.addEventListener('click', async () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await firebase.auth().signInWithPopup(provider);
+                window.location.href = '/index.html';
+            } catch (error) {
+                const messageDiv = document.getElementById('authMessage');
+                messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
+            }
+        });
+    }
+});
 
 // Signup Form Handler
-const signupForm = document.getElementById('signupForm');
-if (signupForm) {
-    signupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const fullName = document.getElementById('fullName').value;
-        const email = document.getElementById('signupEmail').value;
-        const password = document.getElementById('signupPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const accountType = document.querySelector('input[name="accountType"]:checked').value;
-        const messageDiv = document.getElementById('authMessage');
-        
-        if (password !== confirmPassword) {
-            messageDiv.innerHTML = `<div class="error-message">كلمات المرور غير متطابقة!</div>`;
-            return;
-        }
-        
-        try {
-            const result = await firebase.auth().createUserWithEmailAndPassword(email, password);
-            await result.user.updateProfile({
-                displayName: fullName
-            });
+waitForFirebase(() => {
+    const signupForm = document.getElementById('signupForm');
+    if (signupForm) {
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            // Store user type in localStorage
-            localStorage.setItem(`userType_${result.user.uid}`, accountType);
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const accountType = document.querySelector('input[name="accountType"]:checked').value;
+            const messageDiv = document.getElementById('authMessage');
             
-            messageDiv.innerHTML = `<div class="success-message">تم إنشاء الحساب بنجاح!</div>`;
-            setTimeout(() => {
-                window.location.href = '/index.html';
-            }, 1000);
-        } catch (error) {
-            messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
-        }
-    });
-}
+            if (password !== confirmPassword) {
+                messageDiv.innerHTML = `<div class="error-message">كلمات المرور غير متطابقة!</div>`;
+                return;
+            }
+            
+            try {
+                const result = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                await result.user.updateProfile({
+                    displayName: fullName
+                });
+                
+                // Store user type in localStorage
+                localStorage.setItem(`userType_${result.user.uid}`, accountType);
+                
+                messageDiv.innerHTML = `<div class="success-message">تم إنشاء الحساب بنجاح!</div>`;
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 1000);
+            } catch (error) {
+                messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
+            }
+        });
+    }
+});
 
 // Google Auth Handler for Signup
-const googleSignupBtn = document.getElementById('googleSignup');
-if (googleSignupBtn) {
-    googleSignupBtn.addEventListener('click', async () => {
-        const accountType = document.querySelector('input[name="accountType"]:checked').value;
-        const provider = new firebase.auth.GoogleAuthProvider();
-        try {
-            const result = await firebase.auth().signInWithPopup(provider);
-            localStorage.setItem(`userType_${result.user.uid}`, accountType);
-            window.location.href = '/index.html';
-        } catch (error) {
-            const messageDiv = document.getElementById('authMessage');
-            messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
-        }
-    });
-}
+waitForFirebase(() => {
+    const googleSignupBtn = document.getElementById('googleSignup');
+    if (googleSignupBtn) {
+        googleSignupBtn.addEventListener('click', async () => {
+            const accountType = document.querySelector('input[name="accountType"]:checked').value;
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await firebase.auth().signInWithPopup(provider);
+                localStorage.setItem(`userType_${result.user.uid}`, accountType);
+                window.location.href = '/index.html';
+            } catch (error) {
+                const messageDiv = document.getElementById('authMessage');
+                messageDiv.innerHTML = `<div class="error-message">خطأ: ${getErrorMessage(error.code)}</div>`;
+            }
+        });
+    }
+});
 
 // Get user-friendly error messages
 function getErrorMessage(code) {
@@ -117,9 +136,14 @@ function getErrorMessage(code) {
     return errors[code] || 'حدث خطأ ما';
 }
 
-// Logout function
+// Logout function - global scope
 function logout() {
-    firebase.auth().signOut().then(() => {
-        window.location.href = '/login.html';
+    waitForFirebase(() => {
+        firebase.auth().signOut().then(() => {
+            window.location.href = '/login.html';
+        }).catch((error) => {
+            console.error('Logout error:', error);
+            window.location.href = '/login.html';
+        });
     });
 }
