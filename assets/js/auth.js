@@ -9,6 +9,62 @@ if (authToken) {
     }
 }
 
+// Google Sign-In Handler
+async function handleGoogleSignIn() {
+    const messageDiv = document.getElementById('authMessage');
+    
+    // Wait for Firebase
+    let attempts = 0;
+    while (!window.firebaseReady && attempts < 100) {
+        await new Promise(r => setTimeout(r, 50));
+        attempts++;
+    }
+    
+    if (!window.firebaseReady || !firebaseApp) {
+        messageDiv.innerHTML = `<div class="error-message">Firebase غير جاهز</div>`;
+        return;
+    }
+    
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await firebase.auth(firebaseApp).signInWithPopup(provider);
+        const user = result.user;
+        
+        // Send token to backend
+        const token = await user.getIdToken();
+        const formData = new FormData();
+        formData.append('action', 'firebase-signin');
+        formData.append('token', token);
+        formData.append('email', user.email);
+        formData.append('name', user.displayName || 'مستخدم');
+        formData.append('uid', user.uid);
+        
+        const accountType = document.querySelector('input[name="accountType"]');
+        if (accountType) {
+            formData.append('accountType', accountType.value);
+        }
+        
+        const response = await fetch('/api/auth.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            localStorage.setItem('authToken', JSON.stringify(data.user));
+            messageDiv.innerHTML = `<div class="success-message">تم تسجيل الدخول بنجاح!</div>`;
+            setTimeout(() => {
+                window.location.href = '/index.html';
+            }, 1000);
+        } else {
+            messageDiv.innerHTML = `<div class="error-message">خطأ: ${data.error}</div>`;
+        }
+    } catch (error) {
+        messageDiv.innerHTML = `<div class="error-message">خطأ: ${error.message}</div>`;
+    }
+}
+
 // Check auth state immediately
 const pathname = window.location.pathname;
 const isLoginPage = pathname.includes('login.html');
@@ -144,6 +200,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
+// Attach Google Sign-In button
+document.addEventListener('DOMContentLoaded', () => {
+    const googleBtn = document.getElementById('googleAuthBtn');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleGoogleSignIn();
+        });
+    }
+});
 
 // Get user-friendly error messages
 function getErrorMessage(code) {

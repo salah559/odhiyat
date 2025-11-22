@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/style.css?v=20251122">
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="auth-page">
     <div class="auth-bg">
@@ -35,6 +38,12 @@
                 <button type="submit" class="btn btn-auth">تسجيل الدخول</button>
             </form>
 
+            <div class="auth-divider">أو</div>
+
+            <button id="googleAuthBtn" class="btn btn-google" type="button">
+                <span>تسجيل دخول عبر Google</span>
+            </button>
+
             <p class="auth-switch">
                 ليس لديك حساب؟
                 <a href="/signup.html">إنشاء حساب جديد</a>
@@ -44,6 +53,7 @@
         </div>
     </div>
 
+    <script src="/assets/js/firebase-init.js"></script>
     <script src="/assets/js/auth.js"></script>
 </body>
 </html>

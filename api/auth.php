@@ -51,6 +51,53 @@ if ($action === 'signin') {
     exit;
 }
 
+if ($action === 'firebase-signin') {
+    $token = $_POST['token'] ?? null;
+    $email = $_POST['email'] ?? null;
+    $name = $_POST['name'] ?? null;
+    $uid = $_POST['uid'] ?? null;
+    $accountType = $_POST['accountType'] ?? 'buyer';
+    
+    if (!$email || !$uid) {
+        http_response_code(400);
+        echo json_encode(['error' => 'بيانات ناقصة']);
+        exit;
+    }
+    
+    try {
+        if (!isset($pdo)) {
+            throw new Exception('Database not available');
+        }
+        
+        $firebase_uid = 'firebase_' . $uid;
+        $stmt = $pdo->prepare("SELECT id, email, full_name FROM users WHERE firebase_uid = ?");
+        $stmt->execute([$firebase_uid]);
+        $user = $stmt->fetch();
+        
+        if (!$user) {
+            $stmt = $pdo->prepare("INSERT INTO users (firebase_uid, email, full_name, account_type) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$firebase_uid, $email, $name, $accountType]);
+            $userId = $pdo->lastInsertId();
+        } else {
+            $userId = $user['id'];
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'user' => [
+                'id' => $userId,
+                'email' => $email,
+                'name' => $name,
+                'uid' => $firebase_uid
+            ]
+        ]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'خطأ: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
 if ($action === 'signup') {
     $email = $_POST['email'] ?? null;
     $fullName = $_POST['fullName'] ?? null;
