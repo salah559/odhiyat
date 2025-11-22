@@ -3,14 +3,17 @@ let currentUser = null;
 
 // Helper to wait for Firebase
 function waitForFirebase(callback, maxAttempts = 50) {
-    if (typeof firebase !== 'undefined' && firebase.auth) {
-        try {
+    try {
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth()) {
             callback();
-        } catch (e) {
-            console.error('Firebase callback error:', e);
+        } else if (maxAttempts > 0) {
+            setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 100);
         }
-    } else if (maxAttempts > 0) {
-        setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 100);
+    } catch (e) {
+        console.log('Firebase init timeout - continuing anyway');
+        if (maxAttempts > 0) {
+            setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 100);
+        }
     }
 }
 
@@ -35,6 +38,12 @@ waitForFirebase(() => {
                 // User is NOT logged in and NOT on auth page, redirect to login
                 console.log('Redirecting unauthorized user to login');
                 window.location.href = '/login.html';
+            } else if (isAuthPage) {
+                // User not logged in and on auth page, allow access
+                console.log('Auth page accessible');
+            } else if (user && !isAuthPage) {
+                // User logged in and on regular page, allow access
+                console.log('User logged in, page accessible');
             }
         });
     } catch (e) {
