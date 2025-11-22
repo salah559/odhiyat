@@ -10,7 +10,7 @@ function waitForFirebase(callback, maxAttempts = 100) {
     }
     
     try {
-        if (typeof firebase !== 'undefined' && firebase.auth && typeof firebase.auth() === 'object') {
+        if (window.firebaseInitialized && typeof firebase !== 'undefined' && firebase.auth && typeof firebase.auth() === 'object') {
             callback();
             return;
         }
@@ -80,32 +80,37 @@ waitForFirebase(() => {
     }
 });
 
-// Google Auth Handler for Login
+// Google Auth Handler for Login - Enhanced version
+const googleAuthLoginHandler = async () => {
+    const messageDiv = document.getElementById('authMessage');
+    
+    // Wait for Firebase to initialize
+    let attempts = 0;
+    while (!window.firebaseInitialized && attempts < 100) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        attempts++;
+    }
+    
+    try {
+        if (typeof firebase === 'undefined' || !firebase.auth) {
+            throw new Error('Firebase not initialized');
+        }
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await firebase.auth().signInWithPopup(provider);
+        window.location.href = '/index.html';
+    } catch (error) {
+        const errorMsg = error.code ? getErrorMessage(error.code) : (error.message || 'خطأ غير متوقع');
+        messageDiv.innerHTML = `<div class="error-message">خطأ: ${errorMsg}</div>`;
+    }
+};
+
+// Attach Google Auth button handler
 document.addEventListener('DOMContentLoaded', () => {
     const googleAuthBtn = document.getElementById('googleAuth');
     if (googleAuthBtn) {
-        googleAuthBtn.addEventListener('click', async (e) => {
+        googleAuthBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            const messageDiv = document.getElementById('authMessage');
-            
-            // Wait for Firebase to initialize
-            let attempts = 0;
-            while (!window.firebaseInitialized && attempts < 100) {
-                await new Promise(resolve => setTimeout(resolve, 50));
-                attempts++;
-            }
-            
-            try {
-                if (typeof firebase === 'undefined' || !firebase.auth) {
-                    throw new Error('Firebase not initialized');
-                }
-                const provider = new firebase.auth.GoogleAuthProvider();
-                const result = await firebase.auth().signInWithPopup(provider);
-                window.location.href = '/index.html';
-            } catch (error) {
-                const errorMsg = error.code ? getErrorMessage(error.code) : (error.message || 'خطأ غير متوقع');
-                messageDiv.innerHTML = `<div class="error-message">خطأ: ${errorMsg}</div>`;
-            }
+            googleAuthLoginHandler();
         });
     }
 });
@@ -149,34 +154,39 @@ waitForFirebase(() => {
     }
 });
 
-// Google Auth Handler for Signup
+// Google Auth Handler for Signup - Enhanced version
+const googleAuthSignupHandler = async () => {
+    const messageDiv = document.getElementById('authMessage');
+    
+    // Wait for Firebase to initialize
+    let attempts = 0;
+    while (!window.firebaseInitialized && attempts < 100) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        attempts++;
+    }
+    
+    try {
+        if (typeof firebase === 'undefined' || !firebase.auth) {
+            throw new Error('Firebase not initialized');
+        }
+        const accountType = document.querySelector('input[name="accountType"]:checked').value;
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await firebase.auth().signInWithPopup(provider);
+        localStorage.setItem(`userType_${result.user.uid}`, accountType);
+        window.location.href = '/index.html';
+    } catch (error) {
+        const errorMsg = error.code ? getErrorMessage(error.code) : (error.message || 'خطأ غير متوقع');
+        messageDiv.innerHTML = `<div class="error-message">خطأ: ${errorMsg}</div>`;
+    }
+};
+
+// Attach Google Signup button handler
 document.addEventListener('DOMContentLoaded', () => {
     const googleSignupBtn = document.getElementById('googleSignup');
     if (googleSignupBtn) {
-        googleSignupBtn.addEventListener('click', async (e) => {
+        googleSignupBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            const messageDiv = document.getElementById('authMessage');
-            
-            // Wait for Firebase to initialize
-            let attempts = 0;
-            while (!window.firebaseInitialized && attempts < 100) {
-                await new Promise(resolve => setTimeout(resolve, 50));
-                attempts++;
-            }
-            
-            try {
-                if (typeof firebase === 'undefined' || !firebase.auth) {
-                    throw new Error('Firebase not initialized');
-                }
-                const accountType = document.querySelector('input[name="accountType"]:checked').value;
-                const provider = new firebase.auth.GoogleAuthProvider();
-                const result = await firebase.auth().signInWithPopup(provider);
-                localStorage.setItem(`userType_${result.user.uid}`, accountType);
-                window.location.href = '/index.html';
-            } catch (error) {
-                const errorMsg = error.code ? getErrorMessage(error.code) : (error.message || 'خطأ غير متوقع');
-                messageDiv.innerHTML = `<div class="error-message">خطأ: ${errorMsg}</div>`;
-            }
+            googleAuthSignupHandler();
         });
     }
 });
