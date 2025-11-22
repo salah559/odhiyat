@@ -10,6 +10,16 @@
     <link rel="stylesheet" href="/assets/css/style.css?v=20251122">
 </head>
 <body>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+    <script src="/assets/js/firebase-auth.js?v=20251122"></script>
+    <script>
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = '/login.html';
+            }
+        });
+    </script>
     <nav class="navbar">
         <div class="container">
             <a href="/" class="navbar-brand">
@@ -20,6 +30,7 @@
                 <li><a href="/">الرئيسية</a></li>
                 <li><a href="/products.html">الأضاحي</a></li>
                 <li><a href="/contact.html">تواصل معنا</a></li>
+                <li><a href="#" onclick="logout(); return false;" style="background: linear-gradient(135deg, var(--primary-gold) 0%, var(--gold-light) 100%); padding: 0.7rem 1.5rem; border-radius: 30px;">تسجيل خروج</a></li>
             </ul>
         </div>
     </nav>
