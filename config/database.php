@@ -11,45 +11,43 @@ if (file_exists($env_file)) {
     }
 }
 
-// Try Replit PostgreSQL first, then fall back to MySQL/SQLite
+// Try connection priorities: MySQL (from .env) > PostgreSQL (Replit) > SQLite
 $pdo = null;
 
-// 1. Try Replit PostgreSQL (built-in database)
-if (getenv('DATABASE_URL') && strpos(getenv('DATABASE_URL'), 'postgresql') === 0) {
+// 1. Try MySQL from .env first
+$database_url = getenv('DATABASE_URL');
+if ($database_url && strpos($database_url, 'mysql') === 0) {
+    $url = parse_url($database_url);
+    $db_host = $url['host'] ?? 'localhost';
+    $db_port = $url['port'] ?? 3306;
+    $db_user = $url['user'] ?? '';
+    $db_pass = $url['pass'] ?? '';
+    $db_name = ltrim($url['path'] ?? '', '/');
+    
     try {
-        $pdo = new PDO(getenv('DATABASE_URL'));
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        $pdo = new PDO(
+            "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset=utf8mb4",
+            $db_user,
+            $db_pass,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            ]
+        );
     } catch(PDOException $e) {
         $pdo = null;
     }
 }
 
-// 2. Try MySQL from .env
-if (!$pdo) {
-    $database_url = getenv('DATABASE_URL');
-    if ($database_url && strpos($database_url, 'mysql') === 0) {
-        $url = parse_url($database_url);
-        $db_host = $url['host'] ?? 'localhost';
-        $db_port = $url['port'] ?? 3306;
-        $db_user = $url['user'] ?? '';
-        $db_pass = $url['pass'] ?? '';
-        $db_name = ltrim($url['path'] ?? '', '/');
-        
-        try {
-            $pdo = new PDO(
-                "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset=utf8mb4",
-                $db_user,
-                $db_pass,
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false
-                ]
-            );
-        } catch(PDOException $e) {
-            $pdo = null;
-        }
+// 2. Try Replit PostgreSQL
+if (!$pdo && $database_url && strpos($database_url, 'postgresql') === 0) {
+    try {
+        $pdo = new PDO($database_url);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        $pdo = null;
     }
 }
 
