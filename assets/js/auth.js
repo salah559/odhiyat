@@ -92,24 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Google Auth Handler for Login
-const googleAuthLoginHandler = async () => {
-    const messageDiv = document.getElementById('authMessage');
-    messageDiv.innerHTML = `<div class="info-message">جاري إعادة التوجيه لـ Google...</div>`;
-    
-    messageDiv.innerHTML = `<div class="error-message">تسجيل الدخول عبر Google قريباً</div>`;
-};
-
-// Attach Google Auth button handler
-document.addEventListener('DOMContentLoaded', () => {
-    const googleAuthBtn = document.getElementById('googleAuth');
-    if (googleAuthBtn) {
-        googleAuthBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            googleAuthLoginHandler();
-        });
-    }
-});
 
 // Signup Form Handler
 document.addEventListener('DOMContentLoaded', () => {
@@ -162,24 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Google Auth Handler for Signup
-const googleAuthSignupHandler = async () => {
-    const messageDiv = document.getElementById('authMessage');
-    messageDiv.innerHTML = `<div class="info-message">جاري إعادة التوجيه لـ Google...</div>`;
-    
-    messageDiv.innerHTML = `<div class="error-message">إنشاء حساب عبر Google قريباً</div>`;
-};
-
-// Attach Google Signup button handler
-document.addEventListener('DOMContentLoaded', () => {
-    const googleSignupBtn = document.getElementById('googleSignup');
-    if (googleSignupBtn) {
-        googleSignupBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            googleAuthSignupHandler();
-        });
-    }
-});
 
 // Get user-friendly error messages
 function getErrorMessage(code) {
