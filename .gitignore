@@ -1,7 +1,6 @@
-uploads/
-database/
+node_modules
+dist
 .DS_Store
-Thumbs.db
-*.log
-.env
-config/local.php
+server/public
+vite.config.ts.*
+*.tar.gz
